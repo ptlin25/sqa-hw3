@@ -21,6 +21,13 @@ class InvalidCredentialsError(TodoAppError):
         super().__init__(f"Invalid credentials for user: {username!r}")
 
 
+class EmptyUsernameError(TodoAppError):
+    super().__init__("Username cannot be empty")
+
+class EmptyPasswordError(TodoAppError):
+    super().__init__("Password cannot be empty")
+
+
 class TaskNotFoundError(TodoAppError):
     def __init__(self, task_id: str) -> None:
         self.task_id = task_id

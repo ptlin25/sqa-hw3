@@ -1,7 +1,12 @@
 import hashlib
 import uuid
 
-from exceptions import InvalidCredentialsError, UserAlreadyExistsError, UserNotFoundError
+from exceptions import (
+    EmptyPasswordError,
+    EmptyUsernameError,
+    InvalidCredentialsError, 
+    UserAlreadyExistsError, 
+    UserNotFoundError)
 from models import User
 
 
@@ -17,6 +22,10 @@ class UserService:
         self._by_id: dict[str, User] = {}
 
     def sign_up(self, username: str, password: str) -> User:
+        if not username:
+            raise EmptyUsernameError
+        if not password:
+            raise EmptyPasswordError
         if username in self._by_username:
             raise UserAlreadyExistsError(username)
         user = User(
