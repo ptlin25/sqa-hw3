@@ -2,12 +2,17 @@ import hashlib
 import uuid
 
 from exceptions import (
-    EmptyPasswordError,
-    EmptyUsernameError,
+    InvalidPasswordError,
+    InvalidUsernameError,
     InvalidCredentialsError, 
     UserAlreadyExistsError, 
     UserNotFoundError)
 from models import User
+
+MIN_USERNAME_LEN = 1
+MAX_USERNAME_LEN = 32
+MIN_PASSWORD_LEN = 8
+MAX_PASSWORD_LEN = 64
 
 
 def _hash(password: str) -> str:
@@ -23,9 +28,15 @@ class UserService:
 
     def sign_up(self, username: str, password: str) -> User:
         if not username:
-            raise EmptyUsernameError
-        if not password:
-            raise EmptyPasswordError
+            raise InvalidUsernameError(InvalidUsernameError.EMPTY)
+        elif len(username) > MAX_USERNAME_LEN:
+            raise InvalidUsernameError(InvalidUsernameError.TOO_LONG)
+        
+        if len(password) < MIN_PASSWORD_LEN:
+            raise InvalidPasswordError(InvalidPasswordError.TOO_SHORT)
+        elif len(password) > MAX_PASSWORD_LEN:
+            raise InvalidPasswordError(InvalidPasswordError.TOO_LONG)
+
         if username in self._by_username:
             raise UserAlreadyExistsError(username)
         user = User(
