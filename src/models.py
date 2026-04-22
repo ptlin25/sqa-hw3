@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 
 class Priority(Enum):
@@ -24,7 +23,7 @@ class Task:
     title: str
     description: str
     priority: Priority
-    due_date: Optional[datetime]
+    due_date: datetime | None = None
     completed: bool = False
     category: str = ""
 
