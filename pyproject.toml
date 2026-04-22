@@ -15,7 +15,7 @@ dev = ["pytest>=7.4"]
 py-modules = ["models", "exceptions", "users", "tasks", "reminders"]
 
 [tool.pytest.ini_options]
-testpaths = ["src/tests"]
+testpaths = ["tests"]
 pythonpath = ["src"]
 
 [dependency-groups]

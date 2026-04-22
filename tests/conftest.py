@@ -3,12 +3,6 @@ from unittest.mock import Mock
 
 from reminders import ReminderSender, ReminderService
 from tasks import TaskService
-from users import UserService
-
-
-@pytest.fixture
-def user_service():
-    return UserService()
 
 
 @pytest.fixture
