@@ -139,7 +139,4 @@ class TaskService:
         if task.user_id != user_id:
             raise UnauthorizedTaskAccessError(task_id)
         return task
-
-    def _get_by_id(self, task_id: str) -> Task | None:
-        """Package-internal lookup that skips the ownership check."""
-        return self._tasks.get(task_id)
+    
