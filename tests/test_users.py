@@ -1,9 +1,11 @@
 import pytest
 from users import UserService
 from exceptions import (
+    InvalidCredentialsError,
     InvalidUsernameError,
     InvalidPasswordError,
     UserAlreadyExistsError,
+    UserNotFoundError,
 )
 
 
@@ -29,6 +31,15 @@ class TestSignUp:
 
         # Assert
         assert user.password_hash != "password"
+
+    def test_not_string_username_raises(self, user_service):
+        """Invalid Input"""
+        # Arrange
+        # Use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(InvalidUsernameError):
+            user_service.sign_up(1, "password")
 
     def test_empty_username_raises(self, user_service):
         """Boundary/Edge: username cannot be empty"""
@@ -72,6 +83,15 @@ class TestSignUp:
         with pytest.raises(InvalidUsernameError):
             user_service.sign_up(username, "password")
 
+    def test_not_string_password_raises(self, user_service):
+        """Invalid Input"""
+        # Arrange
+        # Use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(InvalidPasswordError):
+            user_service.sign_up("alice", 1)
+
     def test_7_character_password_is_valid(self, user_service):
         """Boundary/Edge: 7 character password is invalid"""
         # Arrange
@@ -80,7 +100,6 @@ class TestSignUp:
         # Act + Assert
         with pytest.raises(InvalidPasswordError):
             user_service.sign_up("alice", password)
-
 
     def test_8_character_password_is_valid(self, user_service):
         """Boundary/Edge: 8 character password is valid"""
@@ -132,3 +151,53 @@ class TestSignUp:
 
         # Assert
         assert alice.id != bob.id
+
+
+class TestLogin:
+    def test_correct_credentials_returns_same_user(self, user_service):
+        """Happy Path"""
+        # Arrange
+        signed_up = user_service.sign_up("alice", "password")
+
+        # Act
+        logged_in = user_service.log_in("alice", "password")
+
+        # Assert
+        assert logged_in.id == signed_up.id
+        assert logged_in.username == signed_up.username
+    
+    def test_wrong_password_raises(self, user_service):
+        """Exception Handling"""
+        # Arrange
+        user_service.sign_up("alice", "correct_password")
+
+        # Act + Assert
+        with pytest.raises(InvalidCredentialsError):
+            user_service.log_in("alice", "wrong_password")
+    
+    def test_unknown_username_raises(self, user_service):
+        """Exception Handling"""
+        # Arrange
+        # use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(UserNotFoundError):
+            user_service.log_in("nonexistent-user", "password")
+
+    def test_not_string_username_raises(self, user_service):
+        """Invalid Input"""
+        # Arrange
+        # use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(InvalidUsernameError):
+            user_service.log_in(1, "password")
+    
+    def test_not_string_username_raises(self, user_service):
+        """Invalid Input"""
+        # Arrange
+        # use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(InvalidPasswordError):
+            user_service.log_in("alice", 1)
