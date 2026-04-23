@@ -3,10 +3,15 @@ from datetime import datetime
 
 from exceptions import TaskNotFoundError, UnauthorizedTaskAccessError
 from models import Priority
-from tasks import SortBy
+from tasks import SortBy, TaskService
 
 USER_A = "user-a"
 USER_B = "user-b"
+
+
+@pytest.fixture
+def task_service():
+    return TaskService()
 
 
 class TestCreateTask:
