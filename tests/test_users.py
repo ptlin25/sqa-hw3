@@ -165,7 +165,7 @@ class TestLogin:
         # Assert
         assert logged_in.id == signed_up.id
         assert logged_in.username == signed_up.username
-    
+
     def test_wrong_password_raises(self, user_service):
         """Exception Handling"""
         # Arrange
@@ -174,7 +174,7 @@ class TestLogin:
         # Act + Assert
         with pytest.raises(InvalidCredentialsError):
             user_service.log_in("alice", "wrong_password")
-    
+
     def test_unknown_username_raises(self, user_service):
         """Exception Handling"""
         # Arrange
@@ -192,7 +192,7 @@ class TestLogin:
         # Act + Assert
         with pytest.raises(InvalidUsernameError):
             user_service.log_in(1, "password")
-    
+
     def test_not_string_username_raises(self, user_service):
         """Invalid Input"""
         # Arrange
@@ -201,3 +201,25 @@ class TestLogin:
         # Act + Assert
         with pytest.raises(InvalidPasswordError):
             user_service.log_in("alice", 1)
+
+
+class TestGetById:
+    def test_returns_correct_user(self, user_service):
+        """Happy Path"""
+        # Arrange
+        user = user_service.sign_up("alice", "password")
+
+        # Act
+        returned = user_service.get_by_id(user.id)
+
+        # Assert
+        assert returned == user
+
+    def test_unknown_id_raises(self, user_service):
+        """Exception Handling"""
+        # Arrange
+        # Use user_service fixture
+
+        # Act + Assert
+        with pytest.raises(UserNotFoundError):
+            user_service.get_by_id("nonexistent-id")
