@@ -29,10 +29,14 @@ class UserService:
     def sign_up(self, username: str, password: str) -> User:
         if not username:
             raise InvalidUsernameError(InvalidUsernameError.EMPTY)
+        elif type(username) is not str:
+            raise InvalidUsernameError(InvalidUsernameError.TYPE)
         elif len(username) > MAX_USERNAME_LEN:
             raise InvalidUsernameError(InvalidUsernameError.TOO_LONG)
         
-        if len(password) < MIN_PASSWORD_LEN:
+        if type(password) is not str:
+            raise InvalidPasswordError(InvalidPasswordError.TYPE)
+        elif len(password) < MIN_PASSWORD_LEN:
             raise InvalidPasswordError(InvalidPasswordError.TOO_SHORT)
         elif len(password) > MAX_PASSWORD_LEN:
             raise InvalidPasswordError(InvalidPasswordError.TOO_LONG)
@@ -49,6 +53,12 @@ class UserService:
         return user
 
     def log_in(self, username: str, password: str) -> User:
+        if type(username) is not str:
+            raise InvalidUsernameError(InvalidUsernameError.TYPE)
+        
+        if type(password) is not str:
+            raise InvalidPasswordError(InvalidPasswordError.TYPE)
+
         user = self._by_username.get(username)
         if user is None:
             raise UserNotFoundError(username)
