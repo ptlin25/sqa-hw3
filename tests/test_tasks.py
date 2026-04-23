@@ -227,3 +227,47 @@ class TestDeleteTask:
         # Act + Assert
         with pytest.raises(UnauthorizedTaskAccessError):
             task_service.delete_task(USER_B, task.id)
+
+
+class TestMarkComplete:
+    def test_mark_complete(self, task_service):
+        """Happy Path"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Buy milk")
+
+        # Act
+        task_service.mark_complete(USER_A, task.id)
+
+        # Assert
+        assert task.completed is True
+
+    
+    def test_mark_complete_nonexistent_task_raises(self, task_service):
+        """Exception Handling"""
+        # Arrange
+        # use task_service fixture
+
+        # Act + Assert
+        with pytest.raises(TaskNotFoundError):
+            task_service.mark_complete(USER_A, "bad-id")
+
+    def test_mark_incomplete(self, task_service):
+        """Happy Path"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Buy milk")
+        task_service.mark_complete(USER_A, task.id)
+
+        # Act
+        task_service.mark_incomplete(USER_A, task.id)
+
+        # Assert
+        assert task.completed is False
+
+    def test_mark_incomplete_nonexistent_task_raises(self, task_service):
+        """Exception Handling"""
+        # Arrange
+        # use task_service fixture
+
+        # Act + Assert
+        with pytest.raises(TaskNotFoundError):
+            task_service.mark_incomplete(USER_A, "bad-id")
