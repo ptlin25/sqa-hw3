@@ -1,6 +1,10 @@
 import pytest
 from datetime import datetime
 
+from exceptions import (
+    TaskNotFoundError,
+    UnauthorizedTaskAccessError,
+)
 from models import Priority
 
 USER_A = "user-a"
@@ -52,3 +56,35 @@ class TestCreateTask:
         assert task.due_date is None
         assert task.completed is False
         assert task.category == ""
+
+
+class TestGetTask:
+    def test_returns_correct_task(self, task_service):
+        """Happy Path"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Buy milk")
+
+        # Act
+        returned = task_service.get_task(USER_A, task.id)
+
+        # Assert
+        assert returned.id == task.id
+        assert returned.title == task.title
+    
+    def test_nonexistent_task_raises(self, task_service):
+        """Exception Handling"""
+        # Arrange
+        # use task_service fixture
+
+        # Act + Assert
+        with pytest.raises(TaskNotFoundError):
+            task_service.get_task(USER_A, "bad-id")
+
+    def test_other_users_task_raises(self, task_service):
+        """Business Logic"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Private task")
+
+        # Act + Assert
+        with pytest.raises(UnauthorizedTaskAccessError):
+            task_service.get_task(USER_B, task.id)
