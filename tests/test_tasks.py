@@ -18,10 +18,10 @@ class TestCreateTask:
         # use task_service fixture
 
         # Act
-        task = task_service.create_task(USER_A, "Buy milk")
+        task = task_service.create_task(USER_A, "Task")
 
         # Assert
-        assert task.title == "Buy milk"
+        assert task.title == "Task"
         assert task.user_id == USER_A
         assert task.id is not None
     
@@ -49,7 +49,7 @@ class TestCreateTask:
     def test_optional_fields_default_correctly(self, task_service):
         """Happy Path"""
         # Arrange + Act
-        task = task_service.create_task(USER_A, "Buy milk")
+        task = task_service.create_task(USER_A, "Task")
 
         # Assert
         assert task.priority == Priority.MEDIUM
@@ -62,7 +62,7 @@ class TestGetTask:
     def test_returns_correct_task(self, task_service):
         """Happy Path"""
         # Arrange
-        task = task_service.create_task(USER_A, "Buy milk")
+        task = task_service.create_task(USER_A, "Task")
 
         # Act
         returned = task_service.get_task(USER_A, task.id)
@@ -88,3 +88,39 @@ class TestGetTask:
         # Act + Assert
         with pytest.raises(UnauthorizedTaskAccessError):
             task_service.get_task(USER_B, task.id)
+
+
+class TestUpdateTask:
+    def test_updates_specified_field(self, task_service):
+        """Happy Path"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Old title")
+
+        # Act
+        task_service.update_task(USER_A, task.id, title="New title")
+
+        # Assert
+        assert task.title == "New title"
+
+    def test_unspecified_fields_are_unchanged(self, task_service):
+        """Business Logic: only supplied fields are mutated"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Task", priority=Priority.HIGH, category="work")
+
+        # Act
+        task_service.update_task(USER_A, task.id, title="Updated")
+
+        # Assert
+        assert task.priority == Priority.HIGH
+        assert task.category == "work"
+
+    def test_due_date_can_be_cleared_to_none(self, task_service):
+        """Business Logic"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Task", due_date=datetime(2026, 6, 1))
+
+        # Act
+        task_service.update_task(USER_A, task.id, due_date=None)
+
+        # Assert
+        assert task.due_date is None
