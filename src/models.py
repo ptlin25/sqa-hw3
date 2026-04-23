@@ -31,6 +31,7 @@ class Task:
 @dataclass
 class Reminder:
     id: str
+    user_id: str
     task_id: str
     remind_at: datetime
     delivered: bool = False
