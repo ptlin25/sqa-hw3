@@ -24,7 +24,7 @@ class TestCreateTask:
         assert task.title == "Task"
         assert task.user_id == USER_A
         assert task.id is not None
-    
+
     def test_all_fields_stored(self, task_service):
         """Happy Path"""
         # Arrange
@@ -70,7 +70,7 @@ class TestGetTask:
         # Assert
         assert returned.id == task.id
         assert returned.title == task.title
-    
+
     def test_nonexistent_task_raises(self, task_service):
         """Exception Handling"""
         # Arrange
@@ -105,7 +105,12 @@ class TestUpdateTask:
     def test_unspecified_fields_are_unchanged(self, task_service):
         """Business Logic: only supplied fields are mutated"""
         # Arrange
-        task = task_service.create_task(USER_A, "Task", priority=Priority.HIGH, category="work")
+        task = task_service.create_task(
+            USER_A, 
+            "Task", 
+            priority=Priority.HIGH, 
+            category="work"
+        )
 
         # Act
         task_service.update_task(USER_A, task.id, title="Updated")
@@ -124,3 +129,101 @@ class TestUpdateTask:
 
         # Assert
         assert task.due_date is None
+
+    def test_no_fields_passed_remains_unchanged(self, task_service):
+        """Equivalence Class: no fields passed"""
+        # Arrange
+        due = datetime(2026, 6, 1)
+        task = task_service.create_task(
+            USER_A, 
+            "Task", 
+            priority=Priority.HIGH, 
+            category="work",
+            due_date=due
+        )
+
+        # Act
+        task_service.update_task(USER_A, task.id)
+
+        # Assert
+        assert task.title == "Task"
+        assert task.priority == Priority.HIGH
+        assert task.category == "work"
+        assert task.due_date == due
+    
+    def test_one_field_passed_changes_one_field(self, task_service):
+        """Equivalence Class: one field passed"""
+        # Arrange
+        due = datetime(2026, 6, 1)
+        task = task_service.create_task(
+            USER_A, 
+            "Task", 
+            priority=Priority.HIGH, 
+            category="work",
+            due_date=due
+        )
+
+        # Act
+        task_service.update_task(USER_A, task.id, category="grocery")
+
+        # Assert
+        assert task.title == "Task"
+        assert task.priority == Priority.HIGH
+        assert task.category == "grocery"
+        assert task.due_date == due
+    
+    def test_multiple_field_passed_changes_multiple_fields(self, task_service):
+        """Equivalence Class: multiple fields passed"""
+        # Arrange
+        due = datetime(2026, 6, 1)
+        task = task_service.create_task(
+            USER_A, 
+            "Task", 
+            priority=Priority.HIGH, 
+            category="work",
+            due_date=due
+        )
+
+        # Act
+        task_service.update_task(
+            USER_A, 
+            task.id, 
+            title="Buy milk", 
+            category="grocery", 
+            priority=Priority.LOW
+        )
+
+        # Assert
+        assert task.title == "Buy milk"
+        assert task.priority == Priority.LOW
+        assert task.category == "grocery"
+        assert task.due_date == due
+
+
+class TestDeleteTask:
+    def test_task_no_longer_retrievable(self, task_service):
+        """Happy Path"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Task")
+
+        # Act
+        task_service.delete_task(USER_A, task.id)
+
+        # Assert
+        with pytest.raises(TaskNotFoundError):
+            task_service.get_task(USER_A, task.id)
+
+    def test_nonexistent_task_raises(self, task_service):
+        """Exception Handling"""
+        # Act + Assert
+        with pytest.raises(TaskNotFoundError):
+            task_service.delete_task(USER_A, "bad-id")
+
+    def test_other_users_task_raises(self, task_service):
+        """Business Logic: a user cannot delete a task they do not own"""
+        # Arrange
+        task = task_service.create_task(USER_A, "Private task")
+
+        # Act + Assert
+        with pytest.raises(UnauthorizedTaskAccessError):
+            task_service.delete_task(USER_B, task.id)
