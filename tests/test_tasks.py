@@ -112,10 +112,7 @@ class TestUpdateTask:
         # Arrange
         task_service = TaskService()
         task = task_service.create_task(
-            USER_A, 
-            "Task", 
-            priority=Priority.HIGH, 
-            category="work"
+            USER_A, "Task", priority=Priority.HIGH, category="work"
         )
 
         # Act
@@ -143,11 +140,7 @@ class TestUpdateTask:
         task_service = TaskService()
         due = datetime(2026, 6, 1)
         task = task_service.create_task(
-            USER_A, 
-            "Task", 
-            priority=Priority.HIGH, 
-            category="work",
-            due_date=due
+            USER_A, "Task", priority=Priority.HIGH, category="work", due_date=due
         )
 
         # Act
@@ -158,18 +151,14 @@ class TestUpdateTask:
         assert task.priority == Priority.HIGH
         assert task.category == "work"
         assert task.due_date == due
-    
+
     def test_one_field_passed_changes_one_field(self):
         """Equivalence Classes: one field passed"""
         # Arrange
         task_service = TaskService()
         due = datetime(2026, 6, 1)
         task = task_service.create_task(
-            USER_A, 
-            "Task", 
-            priority=Priority.HIGH, 
-            category="work",
-            due_date=due
+            USER_A, "Task", priority=Priority.HIGH, category="work", due_date=due
         )
 
         # Act
@@ -180,27 +169,19 @@ class TestUpdateTask:
         assert task.priority == Priority.HIGH
         assert task.category == "grocery"
         assert task.due_date == due
-    
+
     def test_multiple_field_passed_changes_multiple_fields(self):
         """Equivalence Classes: multiple fields passed"""
         # Arrange
         task_service = TaskService()
         due = datetime(2026, 6, 1)
         task = task_service.create_task(
-            USER_A, 
-            "Task", 
-            priority=Priority.HIGH, 
-            category="work",
-            due_date=due
+            USER_A, "Task", priority=Priority.HIGH, category="work", due_date=due
         )
 
         # Act
         task_service.update_task(
-            USER_A, 
-            task.id, 
-            title="Buy milk", 
-            category="grocery", 
-            priority=Priority.LOW
+            USER_A, task.id, title="Buy milk", category="grocery", priority=Priority.LOW
         )
 
         # Assert
@@ -257,7 +238,6 @@ class TestMarkComplete:
         # Assert
         assert task.completed is True
 
-    
     def test_mark_complete_nonexistent_task_raises(self):
         """Exception Handling"""
         # Arrange
@@ -303,15 +283,23 @@ class TestListTasks:
         tasks = task_service.list_tasks(USER_A, sort_by=SortBy.PRIORITY)
 
         # Assert
-        assert [t.priority for t in tasks] == [Priority.HIGH, Priority.MEDIUM, Priority.LOW]
+        assert [t.priority for t in tasks] == [
+            Priority.HIGH,
+            Priority.MEDIUM,
+            Priority.LOW,
+        ]
 
     def test_sort_by_due_date_none_last(self):
         """Business Logic: tasks without a due date sort after all dated tasks"""
         # Arrange
         task_service = TaskService()
         no_date = task_service.create_task(USER_A, "No date")
-        later   = task_service.create_task(USER_A, "Later",  due_date=datetime(2026, 12, 1))
-        sooner  = task_service.create_task(USER_A, "Sooner", due_date=datetime(2026, 1, 1))
+        later = task_service.create_task(
+            USER_A, "Later", due_date=datetime(2026, 12, 1)
+        )
+        sooner = task_service.create_task(
+            USER_A, "Sooner", due_date=datetime(2026, 1, 1)
+        )
 
         # Act
         tasks = task_service.list_tasks(USER_A, sort_by=SortBy.DUE_DATE)
@@ -328,7 +316,6 @@ class TestListTasks:
         incomplete = task_service.create_task(USER_A, "Incomplete")
         complete = task_service.create_task(USER_A, "Complete")
         task_service.mark_complete(USER_A, complete.id)
-        
 
         # Act
         tasks = task_service.list_tasks(USER_A, sort_by=SortBy.COMPLETION)

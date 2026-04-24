@@ -70,8 +70,7 @@ class TaskService:
         if keyword is not None:
             kw = keyword.lower()
             tasks = [
-                t for t in tasks
-                if kw in t.title.lower() or kw in t.description.lower()
+                t for t in tasks if kw in t.title.lower() or kw in t.description.lower()
             ]
 
         if sort_by is SortBy.PRIORITY:
@@ -139,4 +138,3 @@ class TaskService:
         if task.user_id != user_id:
             raise UnauthorizedTaskAccessError(task_id)
         return task
-    

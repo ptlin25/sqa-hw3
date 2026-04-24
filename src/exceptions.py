@@ -25,13 +25,16 @@ class InvalidUsernameError(TodoAppError):
     EMPTY = "username cannot be empty"
     TYPE = "username must be a string"
     TOO_LONG = "username too long"
+
     def __init__(self, reason):
         super().__init__(f"Invalid username: {reason}")
+
 
 class InvalidPasswordError(TodoAppError):
     TYPE = "password must be a string"
     TOO_SHORT = "password too short"
     TOO_LONG = "password too long"
+
     def __init__(self, reason):
         super().__init__(f"Invalid password: {reason}")
 

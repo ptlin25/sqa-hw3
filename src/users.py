@@ -4,9 +4,10 @@ import uuid
 from exceptions import (
     InvalidPasswordError,
     InvalidUsernameError,
-    InvalidCredentialsError, 
-    UserAlreadyExistsError, 
-    UserNotFoundError)
+    InvalidCredentialsError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+)
 from models import User
 
 MIN_USERNAME_LEN = 1
@@ -33,7 +34,7 @@ class UserService:
             raise InvalidUsernameError(InvalidUsernameError.TYPE)
         elif len(username) > MAX_USERNAME_LEN:
             raise InvalidUsernameError(InvalidUsernameError.TOO_LONG)
-        
+
         if type(password) is not str:
             raise InvalidPasswordError(InvalidPasswordError.TYPE)
         elif len(password) < MIN_PASSWORD_LEN:
@@ -55,7 +56,7 @@ class UserService:
     def log_in(self, username: str, password: str) -> User:
         if type(username) is not str:
             raise InvalidUsernameError(InvalidUsernameError.TYPE)
-        
+
         if type(password) is not str:
             raise InvalidPasswordError(InvalidPasswordError.TYPE)
 

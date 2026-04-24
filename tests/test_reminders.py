@@ -4,8 +4,8 @@ from unittest.mock import Mock
 from dataclasses import dataclass
 
 from exceptions import (
-    ReminderNotFoundError, 
-    TaskNotFoundError, 
+    ReminderNotFoundError,
+    TaskNotFoundError,
     UnauthorizedTaskAccessError,
 )
 from models import Priority, Task
@@ -21,12 +21,13 @@ TASK = Task(
     priority=Priority.MEDIUM,
     due_date=None,
     completed=False,
-    category=""
+    category="",
 )
 
 
 class FakeTaskService:
     """A fake TaskService prepopulated with one task"""
+
     def __init__(self):
         self.tasks = {TASK.id: TASK}
 
@@ -37,14 +38,14 @@ class FakeTaskService:
         if task.user_id != user_id:
             raise UnauthorizedTaskAccessError(task_id)
         return task
-    
+
 
 @dataclass
-class Services():
+class Services:
     task_service: FakeTaskService
     reminder_sender: Mock
     reminder_service: ReminderService
-    
+
 
 @pytest.fixture
 def services():
@@ -54,9 +55,8 @@ def services():
     return Services(
         task_service=task_service,
         reminder_sender=reminder_sender,
-        reminder_service=reminder_service
+        reminder_service=reminder_service,
     )
-
 
 
 class TestSetReminder:
@@ -94,7 +94,7 @@ class TestSetReminder:
 class TestRemoveReminder:
     def test_removed_reminder_raises_on_second_remove(self, services):
         """Happy Path"""
-       # Arrange
+        # Arrange
         reminder_service = services.reminder_service
         reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 6, 1))
 
@@ -107,9 +107,9 @@ class TestRemoveReminder:
 
     def test_nonexistent_reminder_raises(self, services):
         """Exception Handling"""
-       # Arrange
+        # Arrange
         reminder_service = services.reminder_service
-        
+
         # Act + Assert
         with pytest.raises(ReminderNotFoundError) as exc_info:
             reminder_service.remove_reminder(USER_A, "bad-id")

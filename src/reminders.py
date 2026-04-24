@@ -2,7 +2,11 @@ import uuid
 from datetime import datetime
 from typing import Protocol
 
-from exceptions import ReminderNotFoundError, TaskNotFoundError, UnauthorizedTaskAccessError
+from exceptions import (
+    ReminderNotFoundError,
+    TaskNotFoundError,
+    UnauthorizedTaskAccessError,
+)
 from models import Reminder, Task
 from tasks import TaskService
 
@@ -26,7 +30,9 @@ class ReminderService:
     def set_reminder(self, user_id: str, task_id: str, remind_at: datetime) -> Reminder:
         # Validates that the task exists and belongs to user_id.
         self._task_service.get_task(user_id, task_id)
-        reminder = Reminder(id=str(uuid.uuid4()), user_id=user_id, task_id=task_id, remind_at=remind_at)
+        reminder = Reminder(
+            id=str(uuid.uuid4()), user_id=user_id, task_id=task_id, remind_at=remind_at
+        )
         self._reminders[reminder.id] = reminder
         return reminder
 
