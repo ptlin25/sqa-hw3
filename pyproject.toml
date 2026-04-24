@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "sqa-hw3"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = []
-
-[project.optional-dependencies]
-dev = ["pytest>=7.4"]
+dependencies = [
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+]
 
 [tool.setuptools]
 py-modules = ["models", "exceptions", "users", "tasks", "reminders"]
@@ -17,9 +17,3 @@ py-modules = ["models", "exceptions", "users", "tasks", "reminders"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-
-[dependency-groups]
-dev = [
-    "pytest>=9.0.3",
-    "pytest-cov>=7.1.0",
-]
