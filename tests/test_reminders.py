@@ -13,23 +13,22 @@ from reminders import ReminderService
 
 USER_A = "user-a"
 USER_B = "user-b"
-TASK_ID = "task-id"
+TASK = Task(
+    id="task-id",
+    user_id=USER_A,
+    title="Task",
+    description="",
+    priority=Priority.MEDIUM,
+    due_date=None,
+    completed=False,
+    category=""
+)
 
 
 class FakeTaskService:
     """A fake TaskService prepopulated with one task"""
     def __init__(self):
-        task = Task(
-            id=TASK_ID,
-            user_id=USER_A,
-            title="Task",
-            description="",
-            priority=Priority.MEDIUM,
-            due_date=None,
-            completed=False,
-            category=""
-        )
-        self.tasks = {TASK_ID: task}
+        self.tasks = {TASK.id: TASK}
 
     def get_task(self, user_id: str, task_id: str) -> Task:
         task = self.tasks.get(task_id)
@@ -67,10 +66,10 @@ class TestSetReminder:
         reminder_service = services.reminder_service
 
         # Act
-        reminder = reminder_service.set_reminder(USER_A, TASK_ID, datetime(2026, 6, 1))
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 6, 1))
 
         # Assert
-        assert reminder.task_id == TASK_ID
+        assert reminder.task_id == TASK.id
         assert reminder.remind_at == datetime(2026, 6, 1)
         assert reminder.id is not None
 
@@ -89,7 +88,7 @@ class TestSetReminder:
 
         # Act + Assert
         with pytest.raises(UnauthorizedTaskAccessError):
-            reminder_service.set_reminder(USER_B, TASK_ID, datetime(2026, 6, 1))
+            reminder_service.set_reminder(USER_B, TASK.id, datetime(2026, 6, 1))
 
 
 class TestRemoveReminder:
@@ -97,7 +96,7 @@ class TestRemoveReminder:
         """Happy Path"""
        # Arrange
         reminder_service = services.reminder_service
-        reminder = reminder_service.set_reminder(USER_A, TASK_ID, datetime(2026, 6, 1))
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 6, 1))
 
         # Act
         reminder_service.remove_reminder(USER_A, reminder.id)
@@ -120,8 +119,80 @@ class TestRemoveReminder:
         """Exception Handling: a user cannot remove another user's reminder"""
         # Arrange
         reminder_service = services.reminder_service
-        reminder = reminder_service.set_reminder(USER_A, TASK_ID, datetime(2026, 6, 1))
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 6, 1))
 
         # Act + Assert
         with pytest.raises(UnauthorizedTaskAccessError):
             reminder_service.remove_reminder(USER_B, reminder.id)
+
+
+class TestDeliverDueReminders:
+    def test_due_reminder_calls_sender(self, services):
+        """Happy Path"""
+        # Arrange
+        reminder_sender = services.reminder_sender
+        reminder_service = services.reminder_service
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 4, 20))
+
+        # Act
+        reminder_service.deliver_due_reminders(datetime(2026, 4, 22))
+
+        # Assert
+        reminder_sender.send.assert_called_once_with(reminder, TASK)
+
+    def test_future_reminder_not_sent(self, services):
+        """Boundary: a reminder one second in the future should not send"""
+        # Arrange
+        reminder_sender = services.reminder_sender
+        reminder_service = services.reminder_service
+        reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 4, 22, 12, 0, 1))
+        now = datetime(2026, 4, 22, 12, 0, 0)
+
+        # Act
+        reminder_service.deliver_due_reminders(now)
+
+        # Assert
+        reminder_sender.send.assert_not_called()
+
+    def test_delivered_reminder_not_sent_again(self, services):
+        """Business Logic: each reminder fires at most once"""
+        # Arrange
+        reminder_sender = services.reminder_sender
+        reminder_service = services.reminder_service
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 4, 20))
+        now = datetime(2026, 4, 22)
+
+        # Act
+        reminder_service.deliver_due_reminders(now)
+        reminder_service.deliver_due_reminders(now)
+
+        # Assert
+        reminder_sender.send.assert_called_once_with(reminder, TASK)
+        assert reminder_sender.send.call_count == 1
+
+    def test_returns_list_of_delivered_reminders(self, services):
+        """Happy Path"""
+        # Arrange
+        reminder_service = services.reminder_service
+        reminder = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 4, 20))
+
+        # Act
+        delivered = reminder_service.deliver_due_reminders(datetime(2026, 4, 22))
+
+        # Assert
+        assert len(delivered) == 1
+        assert delivered[0].id == reminder.id
+
+    def test_only_due_reminders_are_sent(self, services):
+        """Business Logic: only due reminders are sent"""
+        # Arrange
+        reminder_sender = services.reminder_sender
+        reminder_service = services.reminder_service
+        due = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 4, 20))
+        future = reminder_service.set_reminder(USER_A, TASK.id, datetime(2026, 12, 1))
+
+        # Act
+        reminder_service.deliver_due_reminders(datetime(2026, 4, 22))
+
+        # Assert
+        reminder_sender.send.assert_called_once_with(due, TASK)
