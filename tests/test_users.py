@@ -193,7 +193,7 @@ class TestLogin:
         with pytest.raises(InvalidUsernameError):
             user_service.log_in(1, "password")
 
-    def test_not_string_username_raises(self, user_service):
+    def test_not_string_password_raises(self, user_service):
         """Invalid Input"""
         # Arrange
         # use user_service fixture
