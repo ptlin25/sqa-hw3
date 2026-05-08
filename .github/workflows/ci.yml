@@ -16,8 +16,5 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-
-      - run: python3 -m venv .venv
-      - run: source .venv/bin/activate
       - run: python3 -m pip install -e .
-      - run: uv run pytest --cov=src --junit-xml=results.xml
+      - run: pytest --cov=src --junit-xml=results.xml
